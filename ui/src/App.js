@@ -3,27 +3,115 @@ import Layout from "./Layout";
 import Grid from "@material-ui/core/Grid";
 import CPUChartAdapter from "./CPUChartAdapter";
 import NETChartAdapter from "./NETChartAdapter";
+import Summary from "./Summary";
 import iocli from "socket.io-client";
+import DialogTitle from "@material-ui/core/DialogTitle";
+import Dialog from "@material-ui/core/Dialog";
+import List from "@material-ui/core/List";
+import ListItem from "@material-ui/core/ListItem";
+import TextField from "@material-ui/core/TextField";
+import Button from "@material-ui/core/Button";
+
+function Login({ io }) {
+  const [username, setUsername] = useState("");
+  const [password, setPassword] = useState("");
+
+  return (
+    <Dialog open={true}>
+      <DialogTitle>Login</DialogTitle>
+      <List>
+        <ListItem>
+          <TextField
+            required
+            id="standard-required"
+            label="Username"
+            value={username}
+            onChange={(e) => {
+              setUsername(e.target.value);
+            }}
+          />
+        </ListItem>
+        <ListItem>
+          <TextField
+            id="standard-password-input"
+            label="Password"
+            type="password"
+            autoComplete="current-password"
+            value={password}
+            onChange={(e) => {
+              setPassword(e.target.value);
+            }}
+          />
+        </ListItem>
+        <ListItem>
+          <Button
+            color="primary"
+            variant="contained"
+            style={{ width: "100%" }}
+            onClick={() => {
+              io.emit("login", { username: username, password: password });
+            }}
+          >
+            Login
+          </Button>
+        </ListItem>
+      </List>
+    </Dialog>
+  );
+}
 
 function App() {
   const [io, setIo] = useState(undefined);
+  const [login, setLogin] = useState(false);
 
   useEffect(() => {
-    setIo(iocli("http://localhost:3001"));
-  }, []);
+    const ii = iocli("http://localhost:3001", {
+      query: {
+        token: localStorage.getItem("sid"),
+      },
+    });
 
-  return (
-    <Layout>
-      <Grid container spacing={2} justify="center">
-        <Grid item xs={6} md={6}>
-          {io && <CPUChartAdapter io={io} />}
+    ii.on("loggedin", (sid) => {
+      localStorage.setItem("sid", sid);
+      setLogin(true);
+    });
+    ii.on("logoff", () => {
+      setLogin(false);
+    });
+    ii.on("error", (err) => {
+      console.log("ErrRRR", err);
+      setLogin(false);
+    });
+    ii.on("connect_error", (err) => {
+      console.log(err);
+      //setLogin(false);
+    });
+
+    setIo(ii);
+  }, []);
+  if (login) {
+    return (
+      <Layout io={io}>
+        <Grid container spacing={2} justify="center">
+          <Grid item xs={12} md={6}>
+            <Grid container>{io && <Summary io={io} />}</Grid>
+          </Grid>
+          <Grid item xs={12} md={6}>
+            <Grid container spacing={2}>
+              <Grid item xs={12} md={12}>
+                {io && <CPUChartAdapter io={io} />}
+              </Grid>
+              <Grid item xs={12} md={12}>
+                {io && <NETChartAdapter io={io} />}
+              </Grid>
+            </Grid>
+          </Grid>
         </Grid>
-        <Grid item xs={6} md={6}>
-          {io && <NETChartAdapter io={io} />}
-        </Grid>
-      </Grid>
-    </Layout>
-  );
+      </Layout>
+    );
+  } else {
+    return <Login io={io} />;
+  }
 }
 
 export default App;

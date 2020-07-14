@@ -6,10 +6,11 @@ import {
   VictoryArea,
   VictoryTheme,
   VictoryAxis,
+  VictoryZoomContainer,
 } from "victory";
 
 const CPUChartVictory = ({ data }) => {
-  console.log(data);
+  //  console.log(data);
 
   return (
     <VictoryChart
@@ -20,6 +21,7 @@ const CPUChartVictory = ({ data }) => {
         //x: data.length > 0 ? data[0].x.getTime() + 60000 : 0,
       }}
       theme={VictoryTheme.material}
+      //      containerComponent={<VictoryZoomContainer />}
     >
       <VictoryAxis
         tickCount={10}
@@ -30,7 +32,9 @@ const CPUChartVictory = ({ data }) => {
       />
       <VictoryAxis dependentAxis />
       {data.length > 0 && (
-        <VictoryArea
+        <VictoryBar
+          barRatio={1}
+          alignment="start"
           interpolation="natural"
           //animate={true}
           data={data}

@@ -6,10 +6,14 @@ import {
   VictoryArea,
   VictoryTheme,
   VictoryAxis,
+  VictoryTooltip,
+  VictoryStack,
 } from "victory";
 
+const pb = require("pretty-bytes");
+
 const NETChartVictory = ({ data }) => {
-  console.log(data);
+  //  console.log(data);
 
   return (
     <VictoryChart
@@ -30,13 +34,38 @@ const NETChartVictory = ({ data }) => {
       />
       <VictoryAxis dependentAxis />
       {data.length > 0 && (
-        <VictoryArea
-          interpolation="natural"
-          //animate={true}
-          data={data}
-          x="x"
-          y="y"
-        />
+        <VictoryStack colorScale={["#cccccc", "orange"]}>
+          <VictoryBar
+            //barWidth={({ index }) => 60}
+            alignment="start"
+            barRatio={1}
+            labels={({ datum }) => {
+              //console.log(b);
+              return `rx ${pb(datum.rx, { locale: "en" })}/s`;
+            }}
+            labelComponent={<VictoryTooltip constrainToVisibleArea />}
+            interpolation="natural"
+            //animate={true}
+            data={data}
+            x="x"
+            y="rx"
+          />
+          <VictoryBar
+            //barWidth={({ index }) => 60}
+            alignment="start"
+            barRatio={1}
+            labels={({ datum }) => {
+              //console.log(b);
+              return `tx ${pb(datum.tx, { locale: "en" })}/s`;
+            }}
+            labelComponent={<VictoryTooltip constrainToVisibleArea />}
+            interpolation="natural"
+            //animate={true}
+            data={data}
+            x="x"
+            y="tx"
+          />
+        </VictoryStack>
       )}
     </VictoryChart>
   );

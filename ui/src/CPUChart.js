@@ -3,7 +3,7 @@ import { ResponsiveLine } from "@nivo/line";
 import { linearGradientDef } from "@nivo/core";
 
 const CPUChart = ({ data }) => {
-  console.log(data);
+  //  console.log(data);
 
   const defs = [
     linearGradientDef("gradientA", [

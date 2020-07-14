@@ -4,7 +4,8 @@ import CPUChartStream from "./CPUChartStream";
 import CPUChartVictory from "./CPUChartVictory";
 import Card from "@material-ui/core/Card";
 import CardContent from "@material-ui/core/CardContent";
-
+import CardHeader from "@material-ui/core/CardHeader";
+import ComputerIcon from "@material-ui/icons/Computer";
 /*function reducer(state, action) {
   if (action.item) {
     if (state.data.length < 61) {
@@ -42,6 +43,11 @@ export default function ({ io }) {
 
   return (
     <Card>
+      <CardHeader
+        avatar={<ComputerIcon />}
+        title="CPU utilization"
+        subheader={data && data.length > 0 ? Math.round(data[0].y) + "%" : ""}
+      />
       <CardContent style={{ height: "auto" }}>
         {/*<CPUChart
           data={[{ id: "all", color: "hsl(202, 70%, 50%)", data: state.data }]}

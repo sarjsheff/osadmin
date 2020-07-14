@@ -1,44 +1,156 @@
 const si = require("systeminformation");
-var app = require("express")();
+const fs = require("fs");
+let config = {
+  port: 3001,
+  username: "admin",
+  password: Math.random().toString(36).slice(-8),
+};
+try {
+  config = { ...config, ...require("./config.json") };
+} catch (e) {
+  fs.writeFileSync("./config.json", JSON.stringify(config));
+  console.log(`PASSWORD FOR admin IS [${config.password}]`);
+}
+
+// load modules
+let systemd = undefined;
+try {
+  systemd = require("./module_systemd.js")();
+} catch (e) {
+  console.log("SYSTEMD not loaded.", e);
+}
+// end load modules
+
+const EventEmitter = require("events");
+
+class InfoEmitter extends EventEmitter {}
+
+const events = new InfoEmitter();
+
+const express = require("express");
+var app = express();
 var http = require("http").createServer(app);
 var io = require("socket.io")(http);
 
 let cpustat = [];
 let netstat = [];
+let sum = {};
+let authed = {};
 
-app.get("/", (req, res) => {
+app.use(express.static("ui/build/"));
+
+/*app.get("/", (req, res) => {
   res.send("ok");
+});*/
+
+io.use(function (socket, next) {
+  //  console.log(socket);
+  var handshakeData = socket.request;
+  console.log(
+    socket.id,
+    socket.handshake.query.token,
+    authed[socket.handshake.query.token]
+  ); //, authedSessions[socket.id] || "not authed");
+  if (authed[socket.handshake.query.token]) {
+    authed[socket.id] = authed[socket.handshake.query.token];
+    authed[socket.handshake.query.token] = undefined;
+  }
+  next();
+  //next(new Error("authentication error"));
 });
 
 io.on("connection", (socket) => {
-  console.log("a user connected");
+  console.log("a user connected", socket.id);
+
+  if (authed[socket.id] == undefined) {
+    socket.emit("logoff");
+  }
+
+  const jobs = (socket) => {
+    events.on("summary", (data) => {
+      socket.emit("summary", data);
+    });
+
+    events.on("netstat", () => {
+      socket.emit(
+        "netstat",
+        netstat.langth < 101 ? netstat : netstat.slice(netstat.length - 100)
+      );
+    });
+
+    events.on("cpustat", () => {
+      socket.emit(
+        "cpustat",
+        cpustat.langth < 101 ? cpustat : cpustat.slice(cpustat.length - 100)
+      );
+    });
+    if (systemd) {
+      console.log(typeof systemd);
+      systemd.run(io, socket, app);
+    }
+  };
+
+  socket.use((packet, next) => {
+    if (packet[0] === "login" || authed[socket.id]) {
+      console.log(socket.id);
+      next();
+    } else {
+      next(new Error("authentication error"));
+    }
+  });
+
+  socket.on("login", ({ username, password }) => {
+    console.log("Login:", username);
+    if (username === config.username && password === config.password) {
+      authed[socket.id] = username;
+      jobs(socket);
+      socket.emit("loggedin", socket.id);
+    }
+  });
 });
 
-http.listen(3001, () => {
-  console.log("listening on *:3000");
+http.listen(config.port, () => {
+  console.log("listening on *:" + config.port);
+  network(1000);
+  cpu(1000);
+  summary(1000);
 });
 
-setInterval(function () {
+function summary(interval) {
+  si.get({
+    cpu: "*",
+    system: "manufacturer,model,uuid",
+    osInfo: "platform,distro,release,kernel,arch,hostname,logofile",
+    time: "*",
+    mem: "*",
+  }).then((data) => {
+    sum = data;
+    events.emit("summary", data);
+    if (interval) setTimeout(summary, interval, interval);
+  });
+}
+
+function network(interval) {
   si.networkStats().then((data) => {
-    console.log(data);
     const tmp = { data: data, date: new Date() };
-    if (netstat.length < 101) {
+    if (netstat.length < 1001) {
       netstat.push(tmp);
     } else {
       netstat = [...netstat.slice(1), tmp];
     }
-    io.emit("netstat", netstat);
+    events.emit("netstat", tmp);
+    if (interval) setTimeout(network, interval, interval);
   });
-}, 1000);
+}
 
-setInterval(function () {
+function cpu(interval) {
   si.currentLoad().then((data) => {
-    //console.log(data);
-    if (cpustat.length < 101) {
+    if (cpustat.length < 1001) {
       cpustat.push({ ...data, date: new Date() });
     } else {
       cpustat = [...cpustat.slice(1), { ...data, date: new Date() }];
     }
-    io.emit("cpustat", cpustat);
+    events.emit("cpustat", { ...data, date: new Date() });
+    if (interval) setTimeout(cpu, interval, interval);
   });
-}, 1000);
+}
