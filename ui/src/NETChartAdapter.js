@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useReducer } from "react";
 import NETChartVictory from "./NETChartVictory";
+import NETChartJS from "./NETChartJS";
 import Card from "@material-ui/core/Card";
 import CardContent from "@material-ui/core/CardContent";
 import CardHeader from "@material-ui/core/CardHeader";
@@ -25,6 +26,9 @@ export default function ({ io }) {
       setData(dt);
       setCurrent(dt[0]);
     });
+    return function () {
+      io.off("netstat");
+    };
   }, [io]);
 
   return (
@@ -35,7 +39,8 @@ export default function ({ io }) {
         subheader={current ? `RX/TX ↓${pb(current.rx)}/↑${pb(current.tx)}` : ""}
       />
       <CardContent style={{ height: "auto" }}>
-        <NETChartVictory data={data} />
+        <NETChartJS data={data} />
+        {/*<NETChartVictory data={data} />*/}
       </CardContent>
     </Card>
   );

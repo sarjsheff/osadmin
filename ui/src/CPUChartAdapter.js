@@ -2,6 +2,7 @@ import React, { useState, useEffect, useReducer } from "react";
 import CPUChart from "./CPUChart";
 import CPUChartStream from "./CPUChartStream";
 import CPUChartVictory from "./CPUChartVictory";
+import CPUChartJS from "./CPUChartJS";
 import Card from "@material-ui/core/Card";
 import CardContent from "@material-ui/core/CardContent";
 import CardHeader from "@material-ui/core/CardHeader";
@@ -39,6 +40,9 @@ export default function ({ io }) {
         },
       });*/
     });
+    return function () {
+      io.off("cpustat");
+    };
   }, [io]);
 
   return (
@@ -53,7 +57,8 @@ export default function ({ io }) {
           data={[{ id: "all", color: "hsl(202, 70%, 50%)", data: state.data }]}
         />*/}
         {/* <CPUChartStream data={state.data} /> */}
-        <CPUChartVictory data={data} />
+        {/* <CPUChartVictory data={data} /> */}
+        <CPUChartJS data={data} />
       </CardContent>
     </Card>
   );

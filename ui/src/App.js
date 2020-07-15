@@ -4,6 +4,9 @@ import Grid from "@material-ui/core/Grid";
 import CPUChartAdapter from "./CPUChartAdapter";
 import NETChartAdapter from "./NETChartAdapter";
 import Summary from "./Summary";
+import Systemd from "./Systemd";
+import Logs from "./Logs";
+
 import iocli from "socket.io-client";
 import DialogTitle from "@material-ui/core/DialogTitle";
 import Dialog from "@material-ui/core/Dialog";
@@ -60,12 +63,51 @@ function Login({ io }) {
   );
 }
 
+function Page({ io, page }) {
+  switch (page) {
+    case "systemd":
+      return (
+        <Grid item xs={12} md={12}>
+          <Systemd io={io} />
+        </Grid>
+      );
+      break;
+    case "logs":
+      return (
+        <Grid item xs={12} md={12}>
+          <Logs io={io} />
+        </Grid>
+      );
+      break;
+    default:
+      return (
+        <>
+          <Grid item xs={12} md={6}>
+            <Grid container>{io && <Summary io={io} />}</Grid>
+          </Grid>
+          <Grid item xs={12} md={6}>
+            <Grid container spacing={2}>
+              <Grid item xs={12} md={12}>
+                {io && <CPUChartAdapter io={io} />}
+              </Grid>
+              <Grid item xs={12} md={12}>
+                {io && <NETChartAdapter io={io} />}
+              </Grid>
+            </Grid>
+          </Grid>
+        </>
+      );
+      break;
+  }
+}
+
 function App() {
   const [io, setIo] = useState(undefined);
   const [login, setLogin] = useState(false);
+  const [page, go] = useState("summary");
 
   useEffect(() => {
-    const ii = iocli("http://localhost:3001", {
+    const ii = iocli("http://192.168.7.5:3001", {
       query: {
         token: localStorage.getItem("sid"),
       },
@@ -89,23 +131,12 @@ function App() {
 
     setIo(ii);
   }, []);
+
   if (login) {
     return (
-      <Layout io={io}>
+      <Layout io={io} go={go} page={page}>
         <Grid container spacing={2} justify="center">
-          <Grid item xs={12} md={6}>
-            <Grid container>{io && <Summary io={io} />}</Grid>
-          </Grid>
-          <Grid item xs={12} md={6}>
-            <Grid container spacing={2}>
-              <Grid item xs={12} md={12}>
-                {io && <CPUChartAdapter io={io} />}
-              </Grid>
-              <Grid item xs={12} md={12}>
-                {io && <NETChartAdapter io={io} />}
-              </Grid>
-            </Grid>
-          </Grid>
+          <Page page={page} io={io} />
         </Grid>
       </Layout>
     );
