@@ -71,14 +71,12 @@ function Page({ io, page }) {
           <Systemd io={io} />
         </Grid>
       );
-      break;
     case "logs":
       return (
         <Grid item xs={12} md={12}>
           <Logs io={io} />
         </Grid>
       );
-      break;
     default:
       return (
         <>
@@ -97,7 +95,6 @@ function Page({ io, page }) {
           </Grid>
         </>
       );
-      break;
   }
 }
 

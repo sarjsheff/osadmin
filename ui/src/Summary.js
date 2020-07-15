@@ -1,31 +1,12 @@
 import React, { useState, useEffect } from "react";
-import Grid from "@material-ui/core/Grid";
-import List from "@material-ui/core/List";
-import ListItem from "@material-ui/core/ListItem";
-import ListItemText from "@material-ui/core/ListItemText";
 import Table from "@material-ui/core/Table";
 import TableBody from "@material-ui/core/TableBody";
 import TableCell from "@material-ui/core/TableCell";
-//import TableContainer from '@material-ui/core/TableContainer';
-//import TableHead from '@material-ui/core/TableHead';
 import TableRow from "@material-ui/core/TableRow";
-import Paper from "@material-ui/core/Paper";
 import Skeleton from "@material-ui/lab/Skeleton";
-
-//import ChartJS from "./ChartJS";
 
 import moment from "moment";
 const pb = require("pretty-bytes");
-
-function InfoList({ name, value }) {
-  return (
-    <ListItem>
-      <ListItemText>
-        {name}: {value}
-      </ListItemText>
-    </ListItem>
-  );
-}
 
 function Info({ name, value }) {
   return (
