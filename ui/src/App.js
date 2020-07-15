@@ -6,7 +6,7 @@ import NETChartAdapter from "./NETChartAdapter";
 import Summary from "./Summary";
 import Systemd from "./Systemd";
 import Logs from "./Logs";
-
+import Avatar from "@material-ui/core/Avatar";
 import iocli from "socket.io-client";
 import DialogTitle from "@material-ui/core/DialogTitle";
 import Dialog from "@material-ui/core/Dialog";
@@ -14,6 +14,9 @@ import List from "@material-ui/core/List";
 import ListItem from "@material-ui/core/ListItem";
 import TextField from "@material-ui/core/TextField";
 import Button from "@material-ui/core/Button";
+import Typography from "@material-ui/core/Typography";
+import Toolbar from "@material-ui/core/Toolbar";
+import IconButton from "@material-ui/core/IconButton";
 
 function Login({ io }) {
   const [username, setUsername] = useState("");
@@ -21,7 +24,14 @@ function Login({ io }) {
 
   return (
     <Dialog open={true}>
-      <DialogTitle>Login</DialogTitle>
+      {/*<DialogTitle>*/}
+      <Toolbar variant="dense">
+        <IconButton edge="start" color="inherit" aria-label="menu">
+          <Avatar alt="OSAdmin" src="/android-chrome-512x512.png" />
+        </IconButton>
+        <Typography variant="h6">Login</Typography>
+      </Toolbar>
+      {/*</DialogTitle>*/}
       <List>
         <ListItem>
           <TextField
