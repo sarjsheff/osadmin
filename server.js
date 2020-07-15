@@ -12,10 +12,18 @@ try {
   console.log(`PASSWORD FOR admin IS [${config.password}]`);
 }
 
+let menu = {
+  summary: { label: "Summary", enable: true },
+  systemd: { label: "Systemd", enable: false },
+  logs: { label: "Logs", enable: false },
+};
+
 // load modules
 let systemd = undefined;
 try {
   systemd = require("./module_systemd.js")();
+  menu.systemd.enable = true;
+  menu.logs.enable = true;
 } catch (e) {
   console.log("SYSTEMD not loaded.", e);
 }
@@ -67,6 +75,10 @@ io.on("connection", (socket) => {
   }
 
   const jobs = (socket) => {
+    events.on("menu", (data) => {
+      socket.emit("menu", menu);
+    });
+
     events.on("summary", (data) => {
       socket.emit("summary", data);
     });
@@ -74,16 +86,17 @@ io.on("connection", (socket) => {
     events.on("netstat", () => {
       socket.emit(
         "netstat",
-        netstat.langth < 101 ? netstat : netstat.slice(netstat.length - 100)
+        netstat.length < 101 ? netstat : netstat.slice(netstat.length - 100)
       );
     });
 
     events.on("cpustat", () => {
       socket.emit(
         "cpustat",
-        cpustat.langth < 101 ? cpustat : cpustat.slice(cpustat.length - 100)
+        cpustat.length < 101 ? cpustat : cpustat.slice(cpustat.length - 100)
       );
     });
+
     if (systemd) {
       console.log(typeof systemd);
       systemd.run(io, socket, app);
@@ -111,10 +124,16 @@ io.on("connection", (socket) => {
 
 http.listen(config.port, () => {
   console.log("listening on *:" + config.port);
-  network(1000);
-  cpu(1000);
-  summary(1000);
+  network(5000);
+  cpu(5000);
+  summary(5000);
+  sendmenu(5000);
 });
+
+function sendmenu(interval) {
+  events.emit("menu", menu);
+  if (interval) setTimeout(sendmenu, interval, interval);
+}
 
 function summary(interval) {
   si.get({
