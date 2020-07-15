@@ -114,11 +114,16 @@ function App() {
   const [page, go] = useState("summary");
 
   useEffect(() => {
-    const ii = iocli("http://192.168.7.5:3001", {
-      query: {
-        token: localStorage.getItem("sid"),
-      },
-    });
+    const ii = iocli(
+      !process.env.NODE_ENV || process.env.NODE_ENV === "development"
+        ? "http://192.168.7.5:3001"
+        : "/",
+      {
+        query: {
+          token: localStorage.getItem("sid"),
+        },
+      }
+    );
 
     ii.on("loggedin", (sid) => {
       localStorage.setItem("sid", sid);
