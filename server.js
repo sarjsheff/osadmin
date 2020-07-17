@@ -2,6 +2,7 @@ const si = require("systeminformation");
 const fs = require("fs");
 let config = {
   port: 3001,
+  host: "0.0.0.0",
   username: "admin",
   password: Math.random().toString(36).slice(-8),
 };
@@ -122,7 +123,7 @@ io.on("connection", (socket) => {
   });
 });
 
-http.listen(config.port, () => {
+http.listen(config.port, config.host, () => {
   console.log("listening on *:" + config.port);
   network(5000);
   cpu(5000);

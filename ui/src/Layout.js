@@ -97,7 +97,7 @@ function Layout({ io, children, go, page }) {
             </MenuList>
           </Drawer>
         )}
-        <AppBar position="static" variant="elevation">
+        <AppBar position="fixed" variant="elevation">
           <Toolbar>
             {showmenu && (
               <IconButton
@@ -118,7 +118,9 @@ function Layout({ io, children, go, page }) {
             </Typography>
           </Toolbar>
         </AppBar>
-        <Box p={2}>{children}</Box>
+        <Box p={2} pt={10}>
+          {children}
+        </Box>
       </ThemeProvider>
     </>
   );
