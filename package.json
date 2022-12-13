@@ -6,7 +6,7 @@
   "private": true,
   "dependencies": {
     "dbus-next": "^0.8.2",
-    "express": "^4.17.1",
+    "express": "^4.17.3",
     "socket.io": "^2.3.0",
     "systeminformation": "^4.26.9"
   }
